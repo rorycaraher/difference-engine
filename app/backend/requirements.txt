@@ -1,7 +1,3 @@
 Flask
 flask_cors
-google
-google-cloud-pubsub
-google-cloud-storage
-pg8000
-sqlalchemy
+psycopg2
