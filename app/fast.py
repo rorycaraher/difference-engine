@@ -48,14 +48,13 @@ output_dir = "./output"
 def read_root():
     return {"Hello": "World"}
 
-@app.post('/test_mixdown')
+@app.post('/mixdown')
 async def test_mixdown(values: Values):
     # return await request.json()
     # print(values)
+    data = values.dict()
     # print(data)
-    data = values
     if 'lvg_values' in data:
-        print("inside the if")
         job_id = str(uuid.uuid4())
         timestamp = datetime.now()
         # cursor = conn.cursor()
@@ -64,13 +63,14 @@ async def test_mixdown(values: Values):
         volumes = data['lvg_values']['volumes'][0:len(stems)] # only need volume for each stem
         rounded_volumes = [round(i, 3) for i in volumes]
         input_files = mixer.get_stems(stems_dir, stems)
+        print(input_files)
         file_response = mixer.create_mixdown(input_files, rounded_volumes)
-        return send_file(
-            file_response,
-            as_attachment=True,
-            download_name=file_response,
-            mimetype='audio/mpeg'
-        ), 200
+        # return send_file(
+        #     file_response,
+        #     as_attachment=True,
+        #     download_name=file_response,
+        #     mimetype='audio/mpeg'
+        # ), 200
         # return jsonify({"message": f"Success! {data}"}), 200
         return "Success"
     else:
