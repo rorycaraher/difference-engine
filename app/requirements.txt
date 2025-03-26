@@ -1,5 +1,5 @@
 Flask
 flask_cors
-psycopg2-binary
-flask_sqlalchemy
+psycopg2
 ffmpeg-python
+fastapi
