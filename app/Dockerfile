@@ -1,22 +1,15 @@
-# Stage 1: Use jrottenberg/ffmpeg as the first base image
-FROM jrottenberg/ffmpeg:4.4-ubuntu2004 AS ffmpeg
+# FROM jrottenberg/ffmpeg:4.4
+FROM jrottenberg/ffmpeg:arm64
 
-# Stage 2: Use python:3.12-slim as the second base image
-FROM python:3.12-slim
+# Install PostgreSQL development libraries
+RUN apt-get update && apt-get install -y libpq-dev python3-pip
 
-# Install necessary tools and dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    apt-utils \
-    ffmpeg \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy ffmpeg binaries from the first stage to the second
-COPY --from=ffmpeg /usr/local /usr/local
+# Install Python dependencies
+COPY requirements.txt /app/
+RUN pip install -r /app/requirements.txt
 
 WORKDIR /app
 COPY . /app
-RUN pip install --no-cache-dir -r requirements.txt
 
 ENV PYTHONUNBUFFERED=1
 
