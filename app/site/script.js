@@ -3,7 +3,7 @@ function generateRandomNumbers() {
     const stems = Array.from({length: 8}, (_, i) => i + 1);
     const volumes = [];
 
-    // Shuffle the array to randomize the order
+    // Shuffle the stems array to randomize the order
     for (let i = stems.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [stems[i], stems[j]] = [stems[j], stems[i]];
