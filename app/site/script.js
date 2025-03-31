@@ -1,4 +1,4 @@
-function generateRandomNumbers() {
+async function generateRandomNumbers() {
 
     const stems = Array.from({length: 8}, (_, i) => i + 1);
     const volumes = [];
@@ -21,8 +21,6 @@ function generateRandomNumbers() {
         volumes: volumes
     }
 
-    console.log(lvg_values);
-
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "http://localhost:8000/mixdown", true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -34,5 +32,9 @@ function generateRandomNumbers() {
             alert("Something wrong!");
         }
     };
+
+
 }
+
+document.getElementById("downloadBtn").addEventListener("click", generateRandomNumbers);
 
