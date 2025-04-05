@@ -10,8 +10,8 @@ import os
 import json
 from datetime import datetime
 import uuid
-# import psycopg2
-# from psycopg2 import pool
+import psycopg2
+from psycopg2 import pool
 # mixdown stuff
 from mixer import mixer
 
