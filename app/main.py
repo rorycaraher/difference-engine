@@ -12,7 +12,8 @@ from datetime import datetime
 import uuid
 import psycopg2
 from psycopg2 import pool
-# mixdown stuff
+
+# LVG
 from mixer import mixer
 
 
@@ -50,29 +51,20 @@ def read_root():
 
 @app.post('/mixdown')
 async def test_mixdown(values: Values):
-    # return await request.json()
-    # print(values)
     data = values.dict()
-    # print(data)
     if 'lvg_values' in data:
         job_id = str(uuid.uuid4())
         timestamp = datetime.now()
-        # cursor = conn.cursor()
 
         stems = data['lvg_values']['stems']
-        volumes = data['lvg_values']['volumes'][0:len(stems)] # only need volume for each stem
+        volumes = data['lvg_values']['volumes'][0:len(stems)]
+
         rounded_volumes = [round(i, 3) for i in volumes]
         input_files = mixer.get_stems(stems_dir, stems)
-        print(input_files)
+        
+        # do db write here
+
         file_response = mixer.create_mixdown(input_files, rounded_volumes)
-        # return send_file(
-        #     file_response,
-        #     as_attachment=True,
-        #     download_name=file_response,
-        #     mimetype='audio/mpeg'
-        # ), 200
-        # return jsonify({"message": f"Success! {data}"}), 200
-        return "Success"
+        return json.dumps({"message": f"Success! {data}"}), 200
     else:
-        # return jsonify({"error": "Invalid data"}), 400    
-        return "Invalid data"
+        return json.dumps({"error": "Invalid data"}), 400
