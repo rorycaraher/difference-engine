@@ -16,7 +16,7 @@ async function generateRandomNumbers() {
     }
 
     // print the value
-    const lvg_values = {
+    const de_values = {
         stems: selectedStems,
         volumes: volumes
     }
@@ -24,7 +24,7 @@ async function generateRandomNumbers() {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "http://localhost:8000/mixdown", true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xhr.send(JSON.stringify({ lvg_values: lvg_values }));
+    xhr.send(JSON.stringify({ de_values: de_values }));
     xhr.onload = function() {
         if (xhr.status === 200) {
             alert("Worked!");

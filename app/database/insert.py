@@ -4,7 +4,7 @@ from datetime import datetime
 
 # Connect to your PostgreSQL database
 conn = psycopg2.connect(
-    dbname="lvg",
+    dbname="de",
     user="dbuser",
     password="dbpass",
     host="localhost",
@@ -18,7 +18,7 @@ timestamp = datetime.now()
 
 # Insert into table
 cursor.execute("""
-    INSERT INTO lvg_requests (job_id, timestamp, values) VALUES (%s, %s, %s)
+    INSERT INTO de_requests (job_id, timestamp, values) VALUES (%s, %s, %s)
 """, (job_id, timestamp , '{"key": "value"}'))
 
 conn.commit()

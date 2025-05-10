@@ -3,7 +3,7 @@ from psycopg2 import sql
 
 # Database connection parameters
 db_config = {
-    "dbname": "lvg",
+    "dbname": "de",
     "user": "dbuser",
     "password": "dbpass",
     "host": "localhost",
@@ -19,7 +19,7 @@ try:
 
     # Define SQL statement for creating a new table
     create_table_query = sql.SQL("""
-        CREATE TABLE IF NOT EXISTS lvg_requests (
+        CREATE TABLE IF NOT EXISTS de_requests (
             job_id UUID PRIMARY KEY,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             values JSONB

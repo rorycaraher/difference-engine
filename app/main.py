@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# existing lvg stuff
+
 import os
 import json
 from datetime import datetime
@@ -13,7 +13,6 @@ import uuid
 import psycopg2
 from psycopg2 import pool
 
-# LVG
 from mixer import mixer
 
 
@@ -39,7 +38,7 @@ app.add_middleware(
 app.mount("/site", StaticFiles(directory="site"), name="site")
 
 class Values(BaseModel):
-    lvg_values: dict
+    de_values: dict
 
 mixer = mixer.Mixer()
 stems_dir = "/Users/rca/nltl/lvg-bucket/mp3/first-principles"
@@ -52,12 +51,12 @@ def read_root():
 @app.post('/mixdown')
 async def test_mixdown(values: Values):
     data = values.dict()
-    if 'lvg_values' in data:
+    if 'de_values' in data:
         job_id = str(uuid.uuid4())
         timestamp = datetime.now()
 
-        stems = data['lvg_values']['stems']
-        volumes = data['lvg_values']['volumes'][0:len(stems)]
+        stems = data['de_values']['stems']
+        volumes = data['de_values']['volumes'][0:len(stems)]
 
         rounded_volumes = [round(i, 3) for i in volumes]
         input_files = mixer.get_stems(stems_dir, stems)
