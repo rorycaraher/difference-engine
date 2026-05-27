@@ -1,18 +1,10 @@
 .DS_Store
-.aider*
+.env
 
 # custom ignores
 output/
 .output/
 devscripts/
-
-# Terraform files
-*.tfstate
-*.tfstate.*
-crash.log
-.terraform/
-terraform.tfstate.backup
-.terraform.lock.hcl
 
 # python stuff
 __pycache__/
