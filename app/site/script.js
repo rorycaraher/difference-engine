@@ -1,3 +1,5 @@
+const btn = document.getElementById("downloadBtn");
+
 async function generateRandomNumbers() {
     const stems = Array.from({length: 8}, (_, i) => i + 1);
 
@@ -9,6 +11,9 @@ async function generateRandomNumbers() {
     const selectedStems = stems.slice(0, 3);
 
     const volumes = Array.from({length: 32}, () => Math.random());
+
+    btn.disabled = true;
+    btn.textContent = "Generating…";
 
     try {
         const response = await fetch("/mixdown", {
@@ -28,7 +33,10 @@ async function generateRandomNumbers() {
         URL.revokeObjectURL(url);
     } catch (err) {
         alert(`Something went wrong: ${err.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Download";
     }
 }
 
-document.getElementById("downloadBtn").addEventListener("click", generateRandomNumbers);
+btn.addEventListener("click", generateRandomNumbers);

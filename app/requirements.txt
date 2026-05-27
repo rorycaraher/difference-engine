@@ -1,3 +1,1 @@
-fastapi[standard]
-ffmpeg-python
-python-dotenv
+# Dependencies are managed via pyproject.toml — use uv.

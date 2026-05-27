@@ -18,18 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/site", StaticFiles(directory="site"), name="site")
-
 _mixer = mixer.Mixer()
 
 
 class Values(BaseModel):
     de_values: dict
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
 
 @app.post("/mixdown")
@@ -46,3 +39,6 @@ async def mixdown(values: Values):
     )
 
     return FileResponse(file_path, media_type="audio/mpeg", filename="mixdown.mp3")
+
+
+app.mount("/", StaticFiles(directory="site", html=True), name="site")
