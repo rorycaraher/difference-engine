@@ -1,3 +1,1 @@
-fastapi[standard]
-psycopg2
-ffmpeg-python
+# Dependencies are managed via pyproject.toml — use uv.
