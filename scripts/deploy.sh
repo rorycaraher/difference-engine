@@ -6,9 +6,6 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:?Set CLOUDFLARE_ACCOUNT_ID}"
 IMAGE="registry.cloudflare.com/${ACCOUNT_ID}/difference-engine:latest"
 
-echo "==> Provisioning infrastructure"
-terraform -chdir="$REPO_ROOT/terraform" apply
-
 echo "==> Building container image"
 docker build -t "$IMAGE" "$REPO_ROOT/app"
 

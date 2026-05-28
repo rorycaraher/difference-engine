@@ -8,7 +8,10 @@ image = "registry.cloudflare.com/62aa79ca5a4eb69594dcd5b96f00b4bd/difference-eng
 R2_ACCOUNT_ID    = "62aa79ca5a4eb69594dcd5b96f00b4bd"
 R2_STEMS_BUCKET  = "difference-engine-stems"
 R2_OUTPUT_BUCKET = "difference-engine-output"
-# Secrets (not stored here) — set once with:
+OUTPUT_DIR       = "/tmp"
+# R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY are R2 S3-compatible credentials.
+# These are NOT the Cloudflare API token — create them separately:
+#   Cloudflare dashboard → R2 → Manage R2 API tokens → Create API token
+# Then set them as Worker secrets:
 #   wrangler secret put R2_ACCESS_KEY_ID
 #   wrangler secret put R2_SECRET_ACCESS_KEY
-# Use the value of `terraform output -raw r2_token` as the secret value.

@@ -11,7 +11,7 @@ output "pages_url" {
 }
 
 output "workers_url" {
-  value = "https://${var.domain}/mixdown"
+  value = local.workers_url
 }
 
 output "r2_token" {

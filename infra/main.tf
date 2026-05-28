@@ -5,6 +5,22 @@ terraform {
       version = "~> 4.0"
     }
   }
+
+  backend "s3" {
+    bucket   = "difference-engine-tfstate"
+    key      = "terraform.tfstate"
+    region   = "auto"
+
+    endpoints = {
+      s3 = "https://62aa79ca5a4eb69594dcd5b96f00b4bd.r2.cloudflarestorage.com"
+    }
+
+    # R2 doesn't use these AWS-specific checks
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+  }
 }
 
 provider "cloudflare" {
@@ -44,6 +60,10 @@ resource "cloudflare_api_token" "r2_worker" {
 
 # ── Pages (static frontend) ───────────────────────────────────────────────────
 
+locals {
+  workers_url = "https://difference-engine-api.${var.workers_subdomain}.workers.dev"
+}
+
 resource "cloudflare_pages_project" "frontend" {
   account_id        = var.account_id
   name              = "difference-engine"
@@ -52,6 +72,9 @@ resource "cloudflare_pages_project" "frontend" {
   deployment_configs {
     production {
       compatibility_date = "2024-01-01"
+      environment_variables = {
+        WORKERS_URL = local.workers_url
+      }
     }
   }
 }
@@ -62,27 +85,11 @@ resource "cloudflare_pages_domain" "frontend" {
   domain       = var.domain
 }
 
-# ── DNS ───────────────────────────────────────────────────────────────────────
-
-resource "cloudflare_record" "pages" {
-  zone_id = var.zone_id
-  name    = "@"
-  value   = "${cloudflare_pages_project.frontend.name}.pages.dev"
-  type    = "CNAME"
-  proxied = true
-}
-
-# ── Workers (container — deployed via wrangler, registered here for routing) ──
+# ── Workers (container — deployed via wrangler, registered here) ──────────────
 
 resource "cloudflare_workers_script" "api" {
   account_id = var.account_id
   name       = "difference-engine-api"
   content    = "export default { async fetch(req) { return fetch(req); } }"
   module     = true
-}
-
-resource "cloudflare_workers_route" "mixdown" {
-  zone_id     = var.zone_id
-  pattern     = "${var.domain}/mixdown"
-  script_name = cloudflare_workers_script.api.name
 }
