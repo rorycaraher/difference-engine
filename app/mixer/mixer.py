@@ -1,13 +1,43 @@
 import os
 import random
 from datetime import datetime
-import ffmpeg
 
-from mixer.config import OUTPUT_DIR
+import boto3
+import ffmpeg
+from botocore.config import Config
+
+from mixer.config import (
+    OUTPUT_DIR,
+    R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY,
+    R2_STEMS_BUCKET,
+)
+
+
+def _r2_client():
+    return boto3.client(
+        "s3",
+        endpoint_url=f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+        aws_access_key_id=R2_ACCESS_KEY_ID,
+        aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+        region_name="auto",
+        config=Config(signature_version="s3v4"),
+    )
 
 
 class Mixer:
     def get_stems(self, directory, selected_stems):
+        if R2_STEMS_BUCKET:
+            client = _r2_client()
+            return [
+                client.generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": R2_STEMS_BUCKET, "Key": f"{stem}.mp3"},
+                    ExpiresIn=300,
+                )
+                for stem in selected_stems
+            ]
         return [os.path.join(directory, f"{stem}.mp3") for stem in selected_stems]
 
     def create_mixdown(self, input_files, random_volumes=None):

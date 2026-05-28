@@ -6,4 +6,5 @@ dependencies = [
     "fastapi[standard]",
     "ffmpeg-python",
     "python-dotenv",
+    "boto3",
 ]

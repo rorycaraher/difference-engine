@@ -17,6 +17,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center center;
     z-index: -1;
 }
 
@@ -55,4 +56,52 @@ button:hover {
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* About overlay */
+#about {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+}
+
+#about[hidden] {
+    display: none;
+}
+
+#about-content {
+    position: relative;
+    max-width: 480px;
+    width: calc(100% - 3rem);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 2.5rem;
+    line-height: 1.7;
+}
+
+#about-content h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+#about-content p + p {
+    margin-top: 1rem;
+}
+
+#aboutClose {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    color: white;
+    font-size: 1.25rem;
+    padding: 0.25rem 0.5rem;
+    letter-spacing: 0;
+    text-transform: none;
 }

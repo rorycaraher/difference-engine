@@ -1,4 +1,23 @@
 const btn = document.getElementById("downloadBtn");
+const aboutBtn = document.getElementById("aboutBtn");
+const about = document.getElementById("about");
+const aboutClose = document.getElementById("aboutClose");
+
+aboutBtn.addEventListener("click", () => {
+    about.hidden = false;
+    aboutBtn.setAttribute("aria-expanded", "true");
+    aboutClose.focus();
+});
+
+function closeAbout() {
+    about.hidden = true;
+    aboutBtn.setAttribute("aria-expanded", "false");
+}
+
+aboutClose.addEventListener("click", closeAbout);
+about.addEventListener("click", (e) => { if (e.target === about) closeAbout(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !about.hidden) closeAbout(); });
+
 
 async function generateRandomNumbers() {
     const stems = Array.from({length: 8}, (_, i) => i + 1);
