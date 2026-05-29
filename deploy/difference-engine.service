@@ -1,0 +1,27 @@
+[Unit]
+Description=Difference Engine
+After=network.target
+
+[Service]
+Type=simple
+User=difference-engine
+Group=difference-engine
+WorkingDirectory=/opt/difference-engine
+ExecStart=/opt/difference-engine/difference-engine
+Restart=on-failure
+RestartSec=5s
+EnvironmentFile=/etc/difference-engine/env
+
+# File descriptor limit for Go's HTTP server
+LimitNOFILE=65536
+
+# Hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/difference-engine
+
+[Install]
+WantedBy=multi-user.target

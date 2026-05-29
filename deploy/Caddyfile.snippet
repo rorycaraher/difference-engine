@@ -1,0 +1,14 @@
+de.nothinglefttolearn.com {
+    encode gzip
+
+    # API — proxy to the Go backend
+    handle /mixdown* {
+        reverse_proxy localhost:8000
+    }
+
+    # Static site
+    handle {
+        root * /opt/difference-engine/frontend
+        file_server
+    }
+}

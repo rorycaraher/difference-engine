@@ -1,5 +1,0 @@
-# Copy to backend.hcl and fill in R2 S3-compatible credentials.
-# Create them at: Cloudflare dashboard → R2 → Manage R2 API tokens
-# The token needs read+write access to the difference-engine-tfstate bucket.
-access_key = ""
-secret_key = ""
