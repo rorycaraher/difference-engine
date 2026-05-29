@@ -48,11 +48,3 @@ resource "cloudflare_pages_domain" "frontend" {
   depends_on   = [cloudflare_record.pages]
 }
 
-# ── Workers (container — deployed via wrangler, registered here) ──────────────
-
-resource "cloudflare_workers_script" "api" {
-  account_id = var.account_id
-  name       = "difference-engine-api"
-  content    = "export default { async fetch(req) { return fetch(req); } }"
-  module     = true
-}
