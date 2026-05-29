@@ -130,9 +130,10 @@ func buildFFmpegArgs(inputFiles []string, volumes []float64, outputPath string) 
 		fmt.Fprintf(&mixInputs, "[%s]", label)
 	}
 	parts = append(parts, fmt.Sprintf(
-		"%samix=inputs=%d:duration=longest[mix]",
+		"%samix=inputs=%d:duration=longest[mixed]",
 		mixInputs.String(), len(inputFiles),
 	))
+	parts = append(parts, "[mixed]loudnorm=I=-14:TP=-1:LRA=11[mix]")
 
 	return append(args,
 		"-filter_complex", strings.Join(parts, ";"),
