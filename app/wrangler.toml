@@ -1,8 +1,19 @@
 name               = "difference-engine-api"
+main               = "src/index.js"
 compatibility_date = "2024-01-01"
 
-[containers]
-image = "registry.cloudflare.com/62aa79ca5a4eb69594dcd5b96f00b4bd/difference-engine:latest"
+[[containers]]
+class_name = "Backend"
+image = "./Dockerfile"
+max_instances = 1
+
+[[durable_objects.bindings]]
+class_name = "Backend"
+name = "BACKEND"
+
+[[migrations]]
+tag         = "v1"
+new_classes = [ "Backend" ]
 
 [vars]
 R2_ACCOUNT_ID    = "62aa79ca5a4eb69594dcd5b96f00b4bd"
