@@ -1,9 +1,9 @@
 FROM golang:1.25-alpine AS builder
 
 WORKDIR /build
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 RUN go mod download
-COPY . .
+COPY backend/ .
 RUN CGO_ENABLED=0 GOOS=linux go build -o difference-engine .
 
 FROM alpine:3.21
@@ -15,5 +15,4 @@ COPY --from=builder /build/difference-engine ./
 COPY site/ ./site/
 
 EXPOSE 8000
-
 CMD ["./difference-engine"]

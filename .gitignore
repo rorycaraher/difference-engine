@@ -14,6 +14,9 @@ infra/backend.hcl
 output/
 .output/
 devscripts/
+*.db
+*.db-wal
+*.db-shm
 
 # node
 node_modules/
