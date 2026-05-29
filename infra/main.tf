@@ -1,30 +1,11 @@
-terraform {
-  required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
-      version = "~> 4.0"
-    }
-  }
+# ── DNS ───────────────────────────────────────────────────────────────────────
 
-  backend "s3" {
-    bucket   = "difference-engine-tfstate"
-    key      = "terraform.tfstate"
-    region   = "auto"
-
-    endpoints = {
-      s3 = "https://62aa79ca5a4eb69594dcd5b96f00b4bd.r2.cloudflarestorage.com"
-    }
-
-    # R2 doesn't use these AWS-specific checks
-    skip_credentials_validation = true
-    skip_metadata_api_check     = true
-    skip_region_validation      = true
-    skip_requesting_account_id  = true
-  }
-}
-
-provider "cloudflare" {
-  # Set CLOUDFLARE_API_TOKEN in your environment
+resource "cloudflare_record" "pages" {
+  zone_id = var.zone_id
+  name    = var.domain
+  content = "${cloudflare_pages_project.frontend.name}.pages.dev"
+  type    = "CNAME"
+  proxied = true
 }
 
 # ── R2 Buckets ────────────────────────────────────────────────────────────────
@@ -39,29 +20,10 @@ resource "cloudflare_r2_bucket" "output" {
   name       = "difference-engine-output"
 }
 
-# ── R2 API Token (used by the Workers container) ──────────────────────────────
-
-data "cloudflare_api_token_permission_groups" "all" {}
-
-resource "cloudflare_api_token" "r2_worker" {
-  name = "difference-engine-worker-r2"
-
-  policy {
-    permission_groups = [
-      data.cloudflare_api_token_permission_groups.all.r2["Workers R2 Storage Bucket Item Read"],
-      data.cloudflare_api_token_permission_groups.all.r2["Workers R2 Storage Bucket Item Write"],
-    ]
-    resources = {
-      "com.cloudflare.edge.r2.bucket.${var.account_id}_default_${cloudflare_r2_bucket.stems.name}"  = "read"
-      "com.cloudflare.edge.r2.bucket.${var.account_id}_default_${cloudflare_r2_bucket.output.name}" = "edit"
-    }
-  }
-}
-
 # ── Pages (static frontend) ───────────────────────────────────────────────────
 
 locals {
-  workers_url = "https://difference-engine-api.${var.workers_subdomain}.workers.dev"
+  workers_url = "https://difference-engine-api.${var.workers_subdomain}"
 }
 
 resource "cloudflare_pages_project" "frontend" {
@@ -83,6 +45,7 @@ resource "cloudflare_pages_domain" "frontend" {
   account_id   = var.account_id
   project_name = cloudflare_pages_project.frontend.name
   domain       = var.domain
+  depends_on   = [cloudflare_record.pages]
 }
 
 # ── Workers (container — deployed via wrangler, registered here) ──────────────

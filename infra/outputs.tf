@@ -14,7 +14,3 @@ output "workers_url" {
   value = local.workers_url
 }
 
-output "r2_token" {
-  value     = cloudflare_api_token.r2_worker.value
-  sensitive = true
-}
