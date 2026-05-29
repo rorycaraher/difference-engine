@@ -15,7 +15,7 @@ async function generateRandomNumbers() {
     const volumes = Array.from({length: 32}, () => Math.random());
 
     btn.disabled = true;
-    btn.textContent = "Generating…";
+    btn.classList.add("loading");
 
     try {
         const response = await fetch("/mixdown", {
@@ -41,7 +41,7 @@ async function generateRandomNumbers() {
         alert(`Something went wrong: ${err.message}`);
     } finally {
         btn.disabled = false;
-        btn.textContent = "GENERATE";
+        btn.classList.remove("loading");
     }
 }
 
