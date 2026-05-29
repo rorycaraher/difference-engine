@@ -1,27 +1,19 @@
-FROM python:3.12-slim AS builder
+FROM golang:1.25-alpine AS builder
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
-
-WORKDIR /app
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
-
-FROM python:3.12-slim
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-COPY --from=builder /app/.venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
-
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o difference-engine .
 
-ENV PYTHONUNBUFFERED=1
+FROM alpine:3.21
+
+RUN apk add --no-cache ffmpeg
+
+WORKDIR /app
+COPY --from=builder /build/difference-engine ./
+COPY site/ ./site/
 
 EXPOSE 8000
 
-ENTRYPOINT ["fastapi", "run", "main.py", "--port", "8000"]
+CMD ["./difference-engine"]

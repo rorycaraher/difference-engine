@@ -2,11 +2,12 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+IMAGE="${IMAGE:-difference-engine:latest}"
 
-echo "==> Deploying Workers container"
-cd "$REPO_ROOT/app" && npx wrangler deploy
+echo "==> Building image"
+docker build --tag "$IMAGE" "$REPO_ROOT/app"
 
-echo "==> Deploying Pages site"
-npx wrangler pages deploy "$REPO_ROOT/app/site" --project-name difference-engine
+echo "==> Pushing image"
+docker push "$IMAGE"
 
 echo "Done."

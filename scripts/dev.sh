@@ -9,4 +9,4 @@ if [ -f "$REPO_ROOT/.env" ]; then
 fi
 
 cd "$APP_DIR"
-uv run fastapi dev main.py --port 8000
+go run .
