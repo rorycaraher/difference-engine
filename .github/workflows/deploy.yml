@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H $(echo "${{ secrets.DEPLOY_HOST }}" | cut -d@ -f2) >> ~/.ssh/known_hosts
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Build
+        working-directory: backend
+        run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ../difference-engine .
+
+      - name: Upload binary
+        run: rsync -az --rsync-path="sudo rsync" difference-engine ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/difference-engine
+
+      - name: Upload frontend
+        run: rsync -az --delete --rsync-path="sudo rsync" frontend/ ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/frontend/
+
+      - name: Restart service
+        run: |
+          ssh ${{ secrets.DEPLOY_HOST }} \
+            'sudo systemctl restart difference-engine && sudo systemctl status difference-engine --no-pager'

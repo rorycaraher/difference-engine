@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
@@ -57,13 +58,17 @@ func (s *server) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /mixdown", s.handleMixdown)
 	mux.HandleFunc("GET /mixdown/{id}", s.handleRecall)
-	mux.Handle("/", http.FileServer(http.Dir(s.siteDir)))
+	// SITE_DIR is only set in local dev; in production Caddy serves the static site.
+	if s.siteDir != "" {
+		mux.Handle("/", http.FileServer(http.Dir(s.siteDir)))
+	}
 
 	return cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost", "http://localhost:8000"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"Content-Disposition", "X-Mixdown-ID"},
 	}).Handler(mux)
 }
 
@@ -155,7 +160,8 @@ func (s *server) serveMixdown(w http.ResponseWriter, r *http.Request, track stri
 	if id > 0 {
 		w.Header().Set("X-Mixdown-ID", strconv.FormatInt(id, 10))
 	}
-	w.Header().Set("Content-Disposition", `attachment; filename="mixdown.mp3"`)
+	filename := fmt.Sprintf("%s_%s.mp3", track, time.Now().UTC().Format("20060102_150405"))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	w.Header().Set("Content-Type", "audio/mpeg")
 	http.ServeFile(w, r, filePath)
 }

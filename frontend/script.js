@@ -26,11 +26,15 @@ async function generateRandomNumbers() {
 
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
+        const disposition = response.headers.get("Content-Disposition") ?? "";
+        const match = disposition.match(/filename="([^"]+)"/);
+        const filename = match ? match[1] : "mixdown.mp3";
+
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "mixdown.mp3";
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
     } catch (err) {
