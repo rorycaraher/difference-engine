@@ -30,10 +30,10 @@ jobs:
         run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ../difference-engine .
 
       - name: Upload binary
-        run: rsync -az difference-engine ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/difference-engine
+        run: rsync -az --rsync-path="sudo rsync" difference-engine ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/difference-engine
 
       - name: Upload frontend
-        run: rsync -az --delete frontend/ ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/frontend/
+        run: rsync -az --delete --rsync-path="sudo rsync" frontend/ ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/frontend/
 
       - name: Restart service
         run: |
