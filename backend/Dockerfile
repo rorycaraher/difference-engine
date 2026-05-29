@@ -12,7 +12,7 @@ RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 COPY --from=builder /build/difference-engine ./
-COPY site/ ./site/
+COPY frontend/ ./frontend/
 
 EXPOSE 8000
 CMD ["./difference-engine"]

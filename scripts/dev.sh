@@ -9,4 +9,4 @@ if [ -f "$REPO_ROOT/.env" ]; then
 fi
 
 cd "$BACKEND_DIR"
-SITE_DIR="$REPO_ROOT/site" go run .
+SITE_DIR="$REPO_ROOT/frontend" go run .

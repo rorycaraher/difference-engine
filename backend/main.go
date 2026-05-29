@@ -27,7 +27,7 @@ func loadConfig() appConfig {
 	_ = godotenv.Load()
 	return appConfig{
 		port:    getEnv("PORT", "8000"),
-		siteDir: getEnv("SITE_DIR", "site"),
+		siteDir: getEnv("SITE_DIR", "frontend"),
 		dbPath:  getEnv("DB_PATH", "de.db"),
 		mixer: mixer.Config{
 			StemsDir:          getEnv("STEMS_DIR", ""),
