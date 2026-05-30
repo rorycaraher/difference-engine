@@ -6,6 +6,10 @@ de.nothinglefttolearn.com {
         reverse_proxy localhost:8000
     }
 
+    handle /stems* {
+        reverse_proxy localhost:8000
+    }
+
     # Static site
     handle {
         root * /opt/difference-engine/frontend

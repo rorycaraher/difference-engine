@@ -68,9 +68,13 @@ button:disabled {
     cursor: not-allowed;
 }
 
-button.loading svg {
-    opacity: 0;
-}
+.icon-pause { display: none; }
+
+button.playing .icon-play { display: none; }
+button.playing .icon-pause { display: flex; }
+
+button.loading .icon-play,
+button.loading .icon-pause { opacity: 0; }
 
 button.loading::after {
     content: "";
@@ -85,6 +89,25 @@ button.loading::after {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+#controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+#progress-track {
+    width: calc(100% - clamp(1.5rem, 6vw, 5rem));
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#progress-fill {
+    height: 100%;
+    width: 0%;
+    background: white;
+    transition: width 0.25s linear;
 }
 
 #ui p {

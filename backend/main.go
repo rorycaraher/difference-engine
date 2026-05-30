@@ -7,7 +7,9 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -54,8 +56,32 @@ type server struct {
 	store   *store.Store
 }
 
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(code int) {
+	r.status = code
+	r.ResponseWriter.WriteHeader(code)
+}
+
+func logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rec, r)
+		log.Printf("%s %s %s %d %v",
+			r.RemoteAddr, r.Method, r.URL.Path, rec.status, time.Since(start).Round(time.Millisecond),
+		)
+	})
+}
+
+var safeSegment = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+
 func (s *server) routes() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /stems/{track}/{stem}", s.handleStem)
 	mux.HandleFunc("POST /mixdown", s.handleMixdown)
 	mux.HandleFunc("GET /mixdown/{id}", s.handleRecall)
 	// SITE_DIR is only set in local dev; in production Caddy serves the static site.
@@ -78,6 +104,30 @@ type mixdownRequest struct {
 		Stems   []json.Number `json:"stems"`
 		Volumes []float64     `json:"volumes"`
 	} `json:"de_values"`
+}
+
+func (s *server) handleStem(w http.ResponseWriter, r *http.Request) {
+	track := r.PathValue("track")
+	stem := r.PathValue("stem")
+	if !safeSegment.MatchString(track) || !safeSegment.MatchString(stem) {
+		http.Error(w, "invalid path", http.StatusBadRequest)
+		return
+	}
+
+	paths, err := s.mixer.GetStems(track, []string{stem})
+	if err != nil {
+		log.Printf("get stem %s/%s: %v", track, stem, err)
+		http.NotFound(w, r)
+		return
+	}
+
+	// R2 mode: presigned URL — redirect the browser directly to it
+	if strings.HasPrefix(paths[0], "http") {
+		http.Redirect(w, r, paths[0], http.StatusTemporaryRedirect)
+		return
+	}
+
+	http.ServeFile(w, r, paths[0])
 }
 
 func (s *server) handleMixdown(w http.ResponseWriter, r *http.Request) {
@@ -182,5 +232,5 @@ func main() {
 	}
 
 	log.Printf("listening on :%s", cfg.port)
-	log.Fatal(http.ListenAndServe(":"+cfg.port, srv.routes()))
+	log.Fatal(http.ListenAndServe(":"+cfg.port, logRequests(srv.routes())))
 }
