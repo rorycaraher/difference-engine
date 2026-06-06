@@ -46,8 +46,9 @@ func (m *Mixer) ListStems(track string) ([]string, error) {
 	}
 	var names []string
 	for _, e := range entries {
-		if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".mp3") {
-			names = append(names, strings.TrimSuffix(e.Name(), filepath.Ext(e.Name())))
+		name := e.Name()
+		if !e.IsDir() && !strings.HasPrefix(name, ".") && strings.HasSuffix(strings.ToLower(name), ".mp3") {
+			names = append(names, strings.TrimSuffix(name, filepath.Ext(name)))
 		}
 	}
 	return names, nil
@@ -82,8 +83,8 @@ func (m *Mixer) listStemsR2(track string) ([]string, error) {
 		}
 		for _, obj := range page.Contents {
 			key := aws.ToString(obj.Key)
-			if strings.HasSuffix(strings.ToLower(key), ".mp3") {
-				base := strings.TrimPrefix(key, prefix)
+			base := strings.TrimPrefix(key, prefix)
+			if !strings.HasPrefix(base, ".") && strings.HasSuffix(strings.ToLower(key), ".mp3") {
 				names = append(names, strings.TrimSuffix(base, filepath.Ext(base)))
 			}
 		}
