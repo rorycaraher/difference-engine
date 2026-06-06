@@ -2,7 +2,7 @@
 
 A generative music player for [NLTL – First Principles](https://de.nothinglefttolearn.com).
 
-Each visit picks three stems at random from a pool of 24, plays them simultaneously at randomised volumes, and lets you download the unique mix as an MP3.
+Each page load selects 3 stems at random from a pool of 24, plays them simultaneously at randomised volumes, and lets you download the unique mix as an MP3.
 
 ## How it works
 

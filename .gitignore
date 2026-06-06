@@ -1,14 +1,6 @@
 .DS_Store
 .env
 
-# terraform
-**/.terraform/
-*.tfstate
-*.tfstate.*
-*.tfplan
-crash.log
-infra/terraform.tfvars
-infra/backend.hcl
 
 # custom ignores
 output/
@@ -17,6 +9,9 @@ devscripts/
 *.db
 *.db-wal
 *.db-shm
+
+# ignore the go binary
+difference-engine
 
 # node
 node_modules/
