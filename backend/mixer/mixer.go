@@ -35,6 +35,60 @@ func New(cfg Config) *Mixer {
 	return &Mixer{cfg: cfg}
 }
 
+// CountStems returns the number of .mp3 files available for the given track.
+func (m *Mixer) CountStems(track string) (int, error) {
+	if m.cfg.R2StemsBucket != "" {
+		return m.countStemsR2(track)
+	}
+	entries, err := os.ReadDir(filepath.Join(m.cfg.StemsDir, track))
+	if err != nil {
+		return 0, fmt.Errorf("read stems dir: %w", err)
+	}
+	count := 0
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".mp3") {
+			count++
+		}
+	}
+	return count, nil
+}
+
+func (m *Mixer) countStemsR2(track string) (int, error) {
+	cfg, err := awsconfig.LoadDefaultConfig(context.Background(),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			m.cfg.R2AccessKeyID, m.cfg.R2SecretAccessKey, "",
+		)),
+		awsconfig.WithRegion("auto"),
+	)
+	if err != nil {
+		return 0, fmt.Errorf("load aws config: %w", err)
+	}
+
+	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", m.cfg.R2AccountID))
+		o.UsePathStyle = true
+	})
+
+	prefix := track + "/"
+	count := 0
+	paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(m.cfg.R2StemsBucket),
+		Prefix: aws.String(prefix),
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.Background())
+		if err != nil {
+			return 0, fmt.Errorf("list objects: %w", err)
+		}
+		for _, obj := range page.Contents {
+			if strings.HasSuffix(strings.ToLower(aws.ToString(obj.Key)), ".mp3") {
+				count++
+			}
+		}
+	}
+	return count, nil
+}
+
 // GetStems returns local file paths or R2 presigned URLs for the given track and stem names.
 // Local path:  StemsDir/track/stem.mp3
 // R2 key:      track/stem.mp3

@@ -81,6 +81,7 @@ var safeSegment = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 func (s *server) routes() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /stems/{track}/count", s.handleStemCount)
 	mux.HandleFunc("GET /stems/{track}/{stem}", s.handleStem)
 	mux.HandleFunc("POST /mixdown", s.handleMixdown)
 	mux.HandleFunc("GET /mixdown/{id}", s.handleRecall)
@@ -104,6 +105,22 @@ type mixdownRequest struct {
 		Stems   []json.Number `json:"stems"`
 		Volumes []float64     `json:"volumes"`
 	} `json:"de_values"`
+}
+
+func (s *server) handleStemCount(w http.ResponseWriter, r *http.Request) {
+	track := r.PathValue("track")
+	if !safeSegment.MatchString(track) {
+		http.Error(w, "invalid track", http.StatusBadRequest)
+		return
+	}
+	count, err := s.mixer.CountStems(track)
+	if err != nil {
+		log.Printf("count stems %s: %v", track, err)
+		http.Error(w, "failed to count stems", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"count":%d}`, count)
 }
 
 func (s *server) handleStem(w http.ResponseWriter, r *http.Request) {

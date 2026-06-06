@@ -1,9 +1,8 @@
 const TRACK = "first-principles";
-const TOTAL_STEMS = 8;
 const PICK = 3;
 
-function pickStems() {
-    const all = Array.from({length: TOTAL_STEMS}, (_, i) => i + 1);
+function pickStems(total) {
+    const all = Array.from({length: total}, (_, i) => i + 1);
     for (let i = all.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [all[i], all[j]] = [all[j], all[i]];
@@ -11,18 +10,11 @@ function pickStems() {
     return all.slice(0, PICK);
 }
 
-const selectedStems = pickStems();
-const volumes = selectedStems.map(() => Math.random() * 0.5 + 0.5);
-
-const players = selectedStems.map((stem, i) => {
-    const audio = new Audio(`/stems/${TRACK}/${stem}`);
-    audio.volume = Math.min(1, volumes[i]);
-    audio.preload = "auto";
-    return audio;
-});
-
 const btn = document.getElementById("playBtn");
 const progressFill = document.getElementById("progress-fill");
+let players = [];
+let selectedStems = [];
+let volumes = [];
 let playing = false;
 let endCount = 0;
 let rafId = null;
@@ -58,18 +50,41 @@ async function togglePlay() {
     }
 }
 
-players.forEach(p => {
-    p.addEventListener("ended", () => {
-        endCount++;
-        if (endCount === players.length) {
-            playing = false;
-            endCount = 0;
-            btn.classList.remove("playing");
-            cancelAnimationFrame(rafId);
-            progressFill.style.width = "0%";
-            players.forEach(p => { p.currentTime = 0; });
-        }
+async function init() {
+    const res = await fetch(`/stems/${TRACK}/count`);
+    const { count } = await res.json();
+
+    selectedStems = pickStems(count);
+    volumes = selectedStems.map(() => Math.random() * 0.5 + 0.5);
+
+    players = selectedStems.map((stem, i) => {
+        const audio = new Audio(`/stems/${TRACK}/${stem}`);
+        audio.volume = Math.min(1, volumes[i]);
+        audio.preload = "auto";
+        return audio;
     });
+
+    players.forEach(p => {
+        p.addEventListener("ended", () => {
+            endCount++;
+            if (endCount === players.length) {
+                playing = false;
+                endCount = 0;
+                btn.classList.remove("playing");
+                cancelAnimationFrame(rafId);
+                progressFill.style.width = "0%";
+                players.forEach(p => { p.currentTime = 0; });
+            }
+        });
+    });
+
+    btn.disabled = false;
+}
+
+btn.disabled = true;
+init().catch(err => {
+    console.error("init error:", err);
+    btn.disabled = false;
 });
 
 btn.addEventListener("click", togglePlay);
