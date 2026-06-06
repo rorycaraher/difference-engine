@@ -68,13 +68,21 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.icon-pause { display: none; }
+.icon-pause {
+    display: none;
+}
 
-button.playing .icon-play { display: none; }
-button.playing .icon-pause { display: flex; }
+button.playing .icon-play {
+    display: none;
+}
+button.playing .icon-pause {
+    display: flex;
+}
 
 button.loading .icon-play,
-button.loading .icon-pause { opacity: 0; }
+button.loading .icon-pause {
+    opacity: 0;
+}
 
 button.loading::after {
     content: "";
@@ -88,7 +96,9 @@ button.loading::after {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 #controls {
@@ -116,6 +126,28 @@ button.loading::after {
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.55);
     margin-top: 0.75rem;
+}
+
+#socials {
+    position: fixed;
+    top: clamp(1.5rem, 4vw, 2.5rem);
+    right: clamp(1.5rem, 6vw, 5rem);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+#socials a {
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    text-decoration: none;
+}
+
+#socials a:hover {
+    color: white;
 }
 
 #watermark {

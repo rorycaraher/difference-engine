@@ -101,9 +101,9 @@ func (s *server) routes() http.Handler {
 
 type mixdownRequest struct {
 	DeValues struct {
-		Track   string        `json:"track"`
-		Stems   []json.Number `json:"stems"`
-		Volumes []float64     `json:"volumes"`
+		Track   string    `json:"track"`
+		Stems   []string  `json:"stems"`
+		Volumes []float64 `json:"volumes"`
 	} `json:"de_values"`
 }
 
@@ -113,14 +113,15 @@ func (s *server) handleStemCount(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid track", http.StatusBadRequest)
 		return
 	}
-	count, err := s.mixer.CountStems(track)
+	stems, err := s.mixer.ListStems(track)
 	if err != nil {
-		log.Printf("count stems %s: %v", track, err)
-		http.Error(w, "failed to count stems", http.StatusInternalServerError)
+		log.Printf("list stems %s: %v", track, err)
+		http.Error(w, "failed to list stems", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, `{"count":%d}`, count)
+	data, _ := json.Marshal(map[string][]string{"stems": stems})
+	w.Write(data)
 }
 
 func (s *server) handleStem(w http.ResponseWriter, r *http.Request) {
@@ -164,27 +165,21 @@ func (s *server) handleMixdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// json.Number.String() matches Python's f"{stem}" for integer stems like 3 → "3"
-	stems := make([]string, len(dv.Stems))
-	for i, n := range dv.Stems {
-		stems[i] = n.String()
-	}
-
 	vols := dv.Volumes
-	if len(vols) > len(stems) {
-		vols = vols[:len(stems)]
+	if len(vols) > len(dv.Stems) {
+		vols = vols[:len(dv.Stems)]
 	}
 	rounded := make([]float64, len(vols))
 	for i, v := range vols {
 		rounded[i] = math.Round(v*1000) / 1000
 	}
 
-	id, err := s.store.RecordRequest(dv.Track, stems, rounded)
+	id, err := s.store.RecordRequest(dv.Track, dv.Stems, rounded)
 	if err != nil {
 		log.Printf("record request: %v", err)
 	}
 
-	s.serveMixdown(w, r, dv.Track, stems, rounded, id)
+	s.serveMixdown(w, r, dv.Track, dv.Stems, rounded, id)
 }
 
 func (s *server) handleRecall(w http.ResponseWriter, r *http.Request) {
@@ -227,7 +222,7 @@ func (s *server) serveMixdown(w http.ResponseWriter, r *http.Request, track stri
 	if id > 0 {
 		w.Header().Set("X-Mixdown-ID", strconv.FormatInt(id, 10))
 	}
-	filename := fmt.Sprintf("%s_%s.mp3", track, time.Now().UTC().Format("20060102_150405"))
+	filename := fmt.Sprintf("nltl-%s_%s.mp3", track, time.Now().UTC().Format("20060102_150405"))
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	w.Header().Set("Content-Type", "audio/mpeg")
 	http.ServeFile(w, r, filePath)

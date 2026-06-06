@@ -1,13 +1,12 @@
 const TRACK = "first-principles";
 const PICK = 3;
 
-function pickStems(total) {
-    const all = Array.from({length: total}, (_, i) => i + 1);
-    for (let i = all.length - 1; i > 0; i--) {
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [all[i], all[j]] = [all[j], all[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    return all.slice(0, PICK);
+    return arr;
 }
 
 const btn = document.getElementById("playBtn");
@@ -21,7 +20,7 @@ let rafId = null;
 
 function updateProgress() {
     const p = players[0];
-    if (p.duration) {
+    if (p && p.duration) {
         progressFill.style.width = (p.currentTime / p.duration * 100) + "%";
     }
     if (playing) rafId = requestAnimationFrame(updateProgress);
@@ -52,9 +51,10 @@ async function togglePlay() {
 
 async function init() {
     const res = await fetch(`/stems/${TRACK}/count`);
-    const { count } = await res.json();
+    if (!res.ok) throw new Error(`stems list failed: ${res.status}`);
+    const { stems } = await res.json();
 
-    selectedStems = pickStems(count);
+    selectedStems = shuffle([...stems]).slice(0, PICK);
     volumes = selectedStems.map(() => Math.random() * 0.5 + 0.5);
 
     players = selectedStems.map((stem, i) => {

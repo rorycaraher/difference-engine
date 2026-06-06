@@ -35,25 +35,25 @@ func New(cfg Config) *Mixer {
 	return &Mixer{cfg: cfg}
 }
 
-// CountStems returns the number of .mp3 files available for the given track.
-func (m *Mixer) CountStems(track string) (int, error) {
+// ListStems returns the basenames (without extension) of all .mp3 files for the given track.
+func (m *Mixer) ListStems(track string) ([]string, error) {
 	if m.cfg.R2StemsBucket != "" {
-		return m.countStemsR2(track)
+		return m.listStemsR2(track)
 	}
 	entries, err := os.ReadDir(filepath.Join(m.cfg.StemsDir, track))
 	if err != nil {
-		return 0, fmt.Errorf("read stems dir: %w", err)
+		return nil, fmt.Errorf("read stems dir: %w", err)
 	}
-	count := 0
+	var names []string
 	for _, e := range entries {
 		if !e.IsDir() && strings.HasSuffix(strings.ToLower(e.Name()), ".mp3") {
-			count++
+			names = append(names, strings.TrimSuffix(e.Name(), filepath.Ext(e.Name())))
 		}
 	}
-	return count, nil
+	return names, nil
 }
 
-func (m *Mixer) countStemsR2(track string) (int, error) {
+func (m *Mixer) listStemsR2(track string) ([]string, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(context.Background(),
 		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
 			m.cfg.R2AccessKeyID, m.cfg.R2SecretAccessKey, "",
@@ -61,7 +61,7 @@ func (m *Mixer) countStemsR2(track string) (int, error) {
 		awsconfig.WithRegion("auto"),
 	)
 	if err != nil {
-		return 0, fmt.Errorf("load aws config: %w", err)
+		return nil, fmt.Errorf("load aws config: %w", err)
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
@@ -70,7 +70,7 @@ func (m *Mixer) countStemsR2(track string) (int, error) {
 	})
 
 	prefix := track + "/"
-	count := 0
+	var names []string
 	paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
 		Bucket: aws.String(m.cfg.R2StemsBucket),
 		Prefix: aws.String(prefix),
@@ -78,15 +78,17 @@ func (m *Mixer) countStemsR2(track string) (int, error) {
 	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(context.Background())
 		if err != nil {
-			return 0, fmt.Errorf("list objects: %w", err)
+			return nil, fmt.Errorf("list objects: %w", err)
 		}
 		for _, obj := range page.Contents {
-			if strings.HasSuffix(strings.ToLower(aws.ToString(obj.Key)), ".mp3") {
-				count++
+			key := aws.ToString(obj.Key)
+			if strings.HasSuffix(strings.ToLower(key), ".mp3") {
+				base := strings.TrimPrefix(key, prefix)
+				names = append(names, strings.TrimSuffix(base, filepath.Ext(base)))
 			}
 		}
 	}
-	return count, nil
+	return names, nil
 }
 
 // GetStems returns local file paths or R2 presigned URLs for the given track and stem names.
