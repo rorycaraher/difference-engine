@@ -25,6 +25,12 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
 
+      - name: Install pandoc
+        run: sudo apt-get install -y pandoc
+
+      - name: Build frontend
+        run: ./scripts/build-frontend.sh
+
       - name: Build
         working-directory: backend
         run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ../difference-engine .
@@ -33,7 +39,7 @@ jobs:
         run: rsync -az --rsync-path="sudo rsync" difference-engine ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/difference-engine
 
       - name: Upload frontend
-        run: rsync -az --delete --rsync-path="sudo rsync" frontend/ ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/frontend/
+        run: rsync -az --delete --rsync-path="sudo rsync" frontend-dist/ ${{ secrets.DEPLOY_HOST }}:/opt/difference-engine/frontend/
 
       - name: Restart service
         run: |
