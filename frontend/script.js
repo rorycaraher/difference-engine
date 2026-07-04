@@ -11,6 +11,7 @@ function shuffle(arr) {
 
 const btn = document.getElementById("playBtn");
 const progressFill = document.getElementById("progress-fill");
+const refreshBtn = document.getElementById("refreshBtn");
 let players = [];
 let selectedStems = [];
 let volumes = [];
@@ -94,9 +95,56 @@ document.addEventListener("keydown", e => {
         e.preventDefault();
         togglePlay();
     }
+    if (e.key === "Escape") closeAbout();
+});
+
+const aboutModal = document.getElementById("about-modal");
+const aboutLink = document.getElementById("aboutLink");
+const aboutClose = document.getElementById("about-close");
+
+function openAbout(e) {
+    e.preventDefault();
+    aboutModal.classList.add("open");
+    aboutClose.focus();
+}
+
+function closeAbout() {
+    aboutModal.classList.remove("open");
+}
+
+aboutLink.addEventListener("click", openAbout);
+aboutClose.addEventListener("click", closeAbout);
+aboutModal.addEventListener("click", e => {
+    if (e.target === aboutModal) closeAbout();
 });
 
 const dlBtn = document.getElementById("downloadBtn");
+
+refreshBtn.addEventListener("click", async () => {
+    if (playing) {
+        cancelAnimationFrame(rafId);
+        playing = false;
+        btn.classList.remove("playing");
+    }
+    players.forEach(p => { p.pause(); p.src = ""; });
+    players = [];
+    endCount = 0;
+    progressFill.style.width = "0%";
+
+    btn.disabled = true;
+    dlBtn.disabled = true;
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add("loading");
+    try {
+        await init();
+    } catch (err) {
+        console.error("refresh error:", err);
+    } finally {
+        refreshBtn.classList.remove("loading");
+        refreshBtn.disabled = false;
+        dlBtn.disabled = false;
+    }
+});
 
 dlBtn.addEventListener("click", async () => {
     dlBtn.disabled = true;
