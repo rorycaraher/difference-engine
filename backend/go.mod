@@ -1,6 +1,6 @@
 module difference-engine
 
-go 1.25.0
+go 1.27.3
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.8
@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.102.1
 	github.com/joho/godotenv v1.5.1
 	github.com/rs/cors v1.11.1
+	modernc.org/sqlite v1.51.0
 )
 
 require (
@@ -35,5 +36,4 @@ require (
 	modernc.org/libc v1.72.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.51.0 // indirect
 )
