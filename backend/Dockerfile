@@ -6,7 +6,7 @@ RUN go mod download
 COPY backend/ .
 RUN CGO_ENABLED=0 GOOS=linux go build -o difference-engine .
 
-FROM alpine:3.21
+FROM alpine:3.24
 
 RUN apk add --no-cache ffmpeg
 
